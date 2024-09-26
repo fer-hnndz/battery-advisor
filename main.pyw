@@ -1,23 +1,44 @@
 import time
-from advisor import get_battery_status, notify, load_settings
+from advisor import get_battery_status, notify, load_settings, notify_with_actions
 
-BATTERY_TRESHOLD = 15
+settings = load_settings()
 
+# LOW_BATTERY_TRESHOLD = settings["tresholds"]["low_battery_treshold"]
+LOW_BATTERY_TRESHOLD = 90
+CRITICAL_BATTERY_TRESHOLD = settings["tresholds"]["critical_battery_treshold"]
+BATTERY_ACTION_TRESHOLD = settings["tresholds"]["battery_action_treshold"]
+CHECK_INTERVAL = settings["advisor"]["check_interval"]
+
+# Configs
+NOTIFY_PLUGGED = settings["advisor"]["notify_plugged"]
+NOTIFY_UNPLUGGED = settings["advisor"]["notify_unplugged"]
+
+# Actions
+LOW_BATTERY_OPTIONS = settings["advisor"]["low_battery_options"]
+CRITICAL_BATTERY_OPTIONS = settings["advisor"]["critical_battery_options"]
 
 if __name__ == "__main__":
-    settings = load_settings()
-    p, was_plugged = get_battery_status()
+    _, was_plugged = get_battery_status()
 
-    notify("Battery Advisor", "Battery Advisor is now running...")
     while True:
 
         batt_percent, plugged = get_battery_status()
 
         # Battery Plugged in notifications
         if plugged != was_plugged:
-            if plugged:
+            was_plugged = plugged
+            if plugged and NOTIFY_PLUGGED:
                 notify("Battery Plugged In", "Battery is now charging")
-            else:
-                notify("Battery Unplugged", "Battery is now discharging")
+            elif not plugged and NOTIFY_UNPLUGGED:
+                notify("Battery Unplugged", "Battery is now discharging.")
 
-        time.sleep(settings["advisor"]["check_every"])
+        # Battery Low notifications
+        if batt_percent <= LOW_BATTERY_TRESHOLD:
+            notify_with_actions(
+                title="Low Battery",
+                message=f"Consider plugging your device.",
+                options=LOW_BATTERY_OPTIONS,
+                actions=settings["actions"],
+            )
+
+        time.sleep(CHECK_INTERVAL)

@@ -12,16 +12,17 @@ battery_action_treshold = 5
 notify_plugged = true
 notify_unplugged = true
 battery_action = "hibernate"
-check_every = 30
+check_interval = 5
 
-low_battery_options = ["hibernate", "suspend", "remind"]
-critical_battery_options = ["hibernate", "suspend", "shutdown"]
+# Note, if you close the notification, the first action will be executed.
+low_battery_options = ["remind", "hibernate", "suspend"]
+critical_battery_options = ["nothing", "hibernate", "shutdown"]
 
 # This is the time in seconds that the reminder will be shown
 # By default, it will remind in 3 minutes.
 remind_time = 180
 
 [actions]
-hibernate = "systemctl hibernate"
-suspend = "systemctl suspend"
-shutdown = "systemctl poweroff"
+hibernate = ["systemctl", "hibernate"]
+suspend = ["systemctl", "suspend"]
+shutdown = ["systemctl", "poweroff"]

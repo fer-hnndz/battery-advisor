@@ -11,13 +11,13 @@ class Advisor(TypedDict):
     notify_plugged: bool
     notify_unplugged: bool
     battery_action: str
-    low_battery_options: tuple[str]
-    critical_battery_options: tuple[str]
+    low_battery_options: list[str]
+    critical_battery_options: list[str]
     remind_time: int
-    check_every: int
+    check_interval: int
 
 
 class Settings(TypedDict):
     tresholds: Tresholds
     advisor: Advisor
-    actions: dict[str, str]
+    actions: dict[str, list[str]]
