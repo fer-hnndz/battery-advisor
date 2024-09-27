@@ -1,5 +1,11 @@
 import time
-from advisor import get_battery_status, notify, load_settings, notify_with_actions
+from advisor import (
+    get_battery_status,
+    notify,
+    load_settings,
+    notify_with_actions,
+    execute_action,
+)
 
 settings = load_settings()
 
@@ -20,6 +26,7 @@ if __name__ == "__main__":
     _, was_plugged = get_battery_status()
 
     while True:
+        print("Checking battery status...")
         remind_time = 0
         batt_percent, plugged = get_battery_status()
 
@@ -32,7 +39,33 @@ if __name__ == "__main__":
                 notify("Battery Unplugged", "Battery is now discharging.")
 
         # Battery Low notifications
-        if batt_percent <= LOW_BATTERY_TRESHOLD:
+        if batt_percent <= BATTERY_ACTION_TRESHOLD and not plugged:
+            notify(
+                "Battery Action",
+                f"Your battery is at {batt_percent}%. Your system will {settings['advisor']['battery_action'].capitalize()} in a few.",
+            )
+            print("Reporting battery action.")
+            print("Sleeping...")
+            time.sleep(5)
+            configured_action = settings["advisor"]["battery_action"]
+            action_cmd = settings["actions"][configured_action]
+            print("Executing Battery Action. Goodbye...")
+            execute_action(action_cmd)
+
+        if batt_percent <= CRITICAL_BATTERY_TRESHOLD and not plugged:
+            print("Reporting critical battery.")
+            remind_time = notify_with_actions(
+                title="CRITICAL BATTERY",
+                message=f"Your battery is at {int(batt_percent)}%. Consider plugging your device.",
+                options=CRITICAL_BATTERY_OPTIONS,
+                actions=settings["actions"],
+                remind_time=round(
+                    settings["advisor"]["remind_time"] / 2
+                ),  # Remind in half the remind time
+            )
+
+        elif batt_percent <= LOW_BATTERY_TRESHOLD and not plugged:
+            print("Reporting low battery.")
             remind_time = notify_with_actions(
                 title="Low Battery",
                 message=f"Consider plugging your device.",
@@ -46,4 +79,5 @@ if __name__ == "__main__":
             time.sleep(remind_time)
             continue
 
+        print("Sleeping...")
         time.sleep(CHECK_INTERVAL)

@@ -3,6 +3,8 @@ import subprocess
 import os
 import time
 
+EXPIRE_TIME = 600000  # 10 minutes
+
 
 def _get_project_root() -> str:
     usr_home = os.path.expanduser("~")
@@ -20,6 +22,18 @@ def get_battery_status() -> tuple[int, bool]:
     """Returns the battery percentage and if it is plugged in"""
     batt = psutil.sensors_battery()
     return batt.percent, batt.power_plugged
+
+
+def execute_action(action: list[str]) -> None:
+    """Executes specified action"""
+
+    try:
+        a = subprocess.run(action)
+    except Exception as e:
+        notify(
+            "Error",
+            f"Failed to perform action. Perhaps the actions is not valid.\n\n{e}",
+        )
 
 
 def notify(title: str, message: str):
@@ -50,7 +64,7 @@ def notify_with_actions(
         title,
         message,
         f"--icon={_get_path_icon()}",
-        "--expire-time=12000",  # Show notification for 2 minutes
+        f"--expire-time={EXPIRE_TIME}",  # Show notification for 2 minutes
         "--wait",
         "--urgency=critical",
     ]
@@ -74,13 +88,5 @@ def notify_with_actions(
     if selected_action == "remind":
         return remind_time
 
-    # Perform action (if it is not remind)
-    try:
-        a = subprocess.run(actions[selected_action])
-    except Exception as e:
-        notify(
-            "Error",
-            f"Failed to perform action. Perhaps the actions is not valid.\n\n{e}",
-        )
-    print("Reached end of notification function")
+    execute_action(actions[selected_action])
     return 0
