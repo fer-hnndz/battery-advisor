@@ -21,7 +21,7 @@ if __name__ == "__main__":
     _, was_plugged = get_battery_status()
 
     while True:
-
+        remind_time = 0
         batt_percent, plugged = get_battery_status()
 
         # Battery Plugged in notifications
@@ -34,11 +34,17 @@ if __name__ == "__main__":
 
         # Battery Low notifications
         if batt_percent <= LOW_BATTERY_TRESHOLD:
-            notify_with_actions(
+            remind_time = notify_with_actions(
                 title="Low Battery",
                 message=f"Consider plugging your device.",
                 options=LOW_BATTERY_OPTIONS,
                 actions=settings["actions"],
+                remind_time=settings["advisor"]["remind_time"],
             )
+
+        if remind_time > 0:
+            print("A function returned a remind time!")
+            time.sleep(remind_time)
+            continue
 
         time.sleep(CHECK_INTERVAL)
