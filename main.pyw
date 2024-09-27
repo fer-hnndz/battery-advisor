@@ -3,8 +3,7 @@ from advisor import get_battery_status, notify, load_settings, notify_with_actio
 
 settings = load_settings()
 
-# LOW_BATTERY_TRESHOLD = settings["tresholds"]["low_battery_treshold"]
-LOW_BATTERY_TRESHOLD = 90
+LOW_BATTERY_TRESHOLD = settings["tresholds"]["low_battery_treshold"]
 CRITICAL_BATTERY_TRESHOLD = settings["tresholds"]["critical_battery_treshold"]
 BATTERY_ACTION_TRESHOLD = settings["tresholds"]["battery_action_treshold"]
 CHECK_INTERVAL = settings["advisor"]["check_interval"]
