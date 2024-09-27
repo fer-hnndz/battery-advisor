@@ -5,7 +5,10 @@ description = "A simple tool to monitor and notify about battery status. Builtm 
 authors = ["fer-hnndz <65425622+fer-hnndz@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-package-mode = false
+homepage = "https://github.com/fer-hnndz/battery-advisor"
+keywords = ["battery", "monitor", "notify"]
+include = ["defaultSettings.toml", "icon.png", "LICENSE"]
+
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -19,3 +22,6 @@ isort = "^5.13.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+battery-advisor = "battery_advisor:entry.main"

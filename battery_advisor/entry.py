@@ -1,11 +1,6 @@
 import time
-from advisor import (
-    get_battery_status,
-    notify,
-    load_settings,
-    notify_with_actions,
-    execute_action,
-)
+from .utils import get_battery_status, notify, notify_with_actions, execute_action
+from .settings_loader import load_settings
 
 settings = load_settings()
 
@@ -22,7 +17,8 @@ NOTIFY_UNPLUGGED = settings["advisor"]["notify_unplugged"]
 LOW_BATTERY_OPTIONS = settings["advisor"]["low_battery_options"]
 CRITICAL_BATTERY_OPTIONS = settings["advisor"]["critical_battery_options"]
 
-if __name__ == "__main__":
+
+def main():
     _, was_plugged = get_battery_status()
 
     while True:
