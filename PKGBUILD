@@ -1,48 +1,28 @@
-
-# Maintainer: Your Name <youremail@domain.com>
-pkgname=battery-advisor
+# Maintainer: Jorge Hernández <jfernandohernandez28@gmail.com>
+pkgname="python-battery-advisor"
 pkgver=0.1.0
 pkgrel=1
-epoch=
-pkgdesc="A simple tool to monitor and notify about battery status. Builtm with Python."
-arch=()
+pkgdesc="A simple tool to monitor and notify about battery status. Built with Python."
+arch=('any')
 url="https://github.com/fer-hnndz/battery-advisor"
 license=('MIT')
-groups=()
-depends=()
-makedepends=()
-checkdepends=()
-optdepends=()
-provides=()
-conflicts=()
-replaces=()
-backup=()
-options=()
-install=
-changelog=
-source=("$pkgname-$pkgver.tar.gz"
-        "$pkgname-$pkgver.patch")
-noextract=()
-sha256sums=()
+depends=("python")
+makedepends=(python-build python-installer python-wheel)
+_name=${pkgname#python-}
+source=("https://files.pythonhosted.org/packages/source/${_name::1}/${_name//-/_}/${_name//-/_}-$pkgver.tar.gz")
+sha256sums=(e85608ed5c7674a0d682cc36a5ce360c91871e9c481157ddf84e66ff7cb47590)
 validpgpkeys=()
 
 prepare() {
-	cd "$pkgname-$pkgver"
-	patch -p1 -i "$srcdir/$pkgname-$pkgver.patch"
+    cd "$srcdir/${_name//-/_}-$pkgver"
 }
 
 build() {
-	cd "$pkgname-$pkgver"
-	./configure --prefix=/usr
-	make
-}
-
-check() {
-	cd "$pkgname-$pkgver"
-	make -k check
+    cd "$srcdir/${_name//-/_}-$pkgver"
+    python -m build --wheel --no-isolation
 }
 
 package() {
-	cd "$pkgname-$pkgver"
-	make DESTDIR="$pkgdir/" install
+    cd "$srcdir/${_name//-/_}-$pkgver"
+    python -m installer --destdir="$pkgdir" dist/*.whl
 }

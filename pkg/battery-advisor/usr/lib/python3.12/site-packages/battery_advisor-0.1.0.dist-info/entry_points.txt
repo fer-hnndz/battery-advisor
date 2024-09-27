@@ -1,0 +1,3 @@
+[console_scripts]
+battery-advisor=battery_advisor:entry.main
+
