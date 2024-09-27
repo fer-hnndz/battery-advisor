@@ -38,8 +38,14 @@ if __name__ == "__main__":
             elif not plugged and NOTIFY_UNPLUGGED:
                 notify("Battery Unplugged", "Battery is now discharging.")
 
+        if plugged:
+            print("Battery is charging. Skipping checks.")
+            print("Sleeping...")
+            time.sleep(CHECK_INTERVAL)
+            continue
+
         # Battery Low notifications
-        if batt_percent <= BATTERY_ACTION_TRESHOLD and not plugged:
+        if batt_percent <= BATTERY_ACTION_TRESHOLD:
             notify(
                 "Battery Action",
                 f"Your battery is at {batt_percent}%. Your system will {settings['advisor']['battery_action'].capitalize()} in a few.",
@@ -52,7 +58,7 @@ if __name__ == "__main__":
             print("Executing Battery Action. Goodbye...")
             execute_action(action_cmd)
 
-        if batt_percent <= CRITICAL_BATTERY_TRESHOLD and not plugged:
+        if batt_percent <= CRITICAL_BATTERY_TRESHOLD:
             print("Reporting critical battery.")
             remind_time = notify_with_actions(
                 title="CRITICAL BATTERY",
@@ -64,7 +70,7 @@ if __name__ == "__main__":
                 ),  # Remind in half the remind time
             )
 
-        elif batt_percent <= LOW_BATTERY_TRESHOLD and not plugged:
+        elif batt_percent <= LOW_BATTERY_TRESHOLD:
             print("Reporting low battery.")
             remind_time = notify_with_actions(
                 title="Low Battery",
