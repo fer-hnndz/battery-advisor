@@ -25,7 +25,13 @@ def get_battery_status() -> tuple[int, bool]:
 
 
 def execute_action(action: list[str]) -> None:
-    """Executes specified action"""
+    """Executes specified action
+
+    Parameters
+    ----------
+    action : list[str]
+        List of strings that make up the command to be executed.
+    """
 
     try:
         a = subprocess.run(action)
