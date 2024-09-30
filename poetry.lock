@@ -162,19 +162,6 @@ files = [
 test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
-name = "pygobject-stubs"
-version = "2.11.0"
-description = "Typing stubs for PyGObject"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "PyGObject-stubs-2.11.0.tar.gz", hash = "sha256:e1c7e32658213ae711d8afc5ea083a434231b8b588d1de23f50d5705a9c8eefe"},
-]
-
-[package.extras]
-dev = ["PyGObject", "black (>=24.1.1)", "codespell", "isort (>=5.13.2)", "pre-commit", "ruff"]
-
-[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -188,4 +175,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "2d2839e1615660db8c450ad2cd88c6f27a31cd648e2697ff95ff56d8358623a0"
+content-hash = "b59897bb180b116200add93216a8b50fe47edf9cdc2d00695c23bff7c20985ff"
