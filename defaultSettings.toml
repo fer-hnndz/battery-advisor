@@ -3,6 +3,10 @@
 # You can change these settings by copying this file to ~/.config/battery-advisor/settings.toml
 # and modifying the values there.
 
+# These are the tresholds where battery-advisor will alert different battery statuses.
+# The values are in percentage. Ex. 15%, 10%, 5%.
+# The values must be in descending order.
+# At battery action, the configured action will execute after 3 seconds of the notification.
 [tresholds]
 low_battery_treshold = 15
 critical_battery_treshold = 10
@@ -11,10 +15,13 @@ battery_action_treshold = 5
 [advisor]
 notify_plugged = true
 notify_unplugged = true
+
+# This is the action that will be executed when the battery reaches the battery_action_treshold.
 battery_action = "hibernate"
 check_interval = 15
 
 # Note, if you close the notification, the first action will be executed.
+# Remind is only supported for low battery.
 low_battery_options = ["remind", "hibernate", "suspend"]
 critical_battery_options = ["hibernate", "shutdown"]
 
@@ -22,6 +29,8 @@ critical_battery_options = ["hibernate", "shutdown"]
 # By default, it will remind in 3 minutes.
 remind_time = 180
 
+# Here you can define the available actions for the battery-advisor.
+# The commands must be separated in lists as Python's subprocess library arguments.
 [actions]
 hibernate = ["systemctl", "hibernate"]
 suspend = ["systemctl", "suspend"]
