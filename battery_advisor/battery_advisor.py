@@ -2,37 +2,53 @@ import threading
 import time
 
 from pystray import Menu, MenuItem
-
-from .gui.alerts import AlertWithButtons, MessageAlert
-from .settings_loader import load_settings
+from .settings_loader import Settings
 from .tray import get_icon
 from .utils import execute_action, get_battery_status
 from .notifications import notify, notify_with_actions, alert_with_options, alert
+from .types import BatteryReport
+from typing import Optional
+from datetime import datetime
 
-settings = load_settings()
+settings = Settings.load()
 
 
 class BatteryAdvisor:
-    LOW_BATTERY_TRESHOLD = settings["tresholds"]["low_battery_treshold"]
-    CRITICAL_BATTERY_TRESHOLD = settings["tresholds"]["critical_battery_treshold"]
-    BATTERY_ACTION_TRESHOLD = settings["tresholds"]["battery_action_treshold"]
-    # CHECK_INTERVAL = settings["advisor"]["check_interval"]
-    CHECK_INTERVAL = 3
-
-    # Configs
-    NOTIFY_PLUGGED = settings["advisor"]["notify_plugged"]
-    NOTIFY_UNPLUGGED = settings["advisor"]["notify_unplugged"]
-
-    # Actions
-    LOW_BATTERY_OPTIONS = settings["advisor"]["low_battery_options"]
-    CRITICAL_BATTERY_OPTIONS = settings["advisor"]["critical_battery_options"]
+    """Base Program that manages SysTray Icon and the battery checker service."""
 
     def __init__(self):
         self.running = True
 
+    def get_battery_reports(self) -> Optional[BatteryReport]:
+        """Returns thet status that needs to be reported to the user"""
+
+        batt_percent, plugged = get_battery_status()
+
+        if plugged:
+            return None
+
+        if batt_percent <= settings.battery_action_treshold:
+            return BatteryReport.ACTION
+
+        if batt_percent <= settings.critical_battery_treshold:
+            return BatteryReport.CRITICAL
+
+        if batt_percent <= 100:
+            return BatteryReport.LOW
+
+        return None
+
     def _battery_checker(self):
+        """
+        Service that checks the battery status and notifies the user.
+        This one runs in a separate thread because the SysTray icon must run on the main thread.
+        """
+
         print("Starting battery checker...")
+
+        # Always get initial status to avoid false notifications
         _, was_plugged = get_battery_status()
+        remind_timestamp = datetime.now()
 
         while True:
             if not self.running:
@@ -40,8 +56,7 @@ class BatteryAdvisor:
                 continue
 
             print("Checking battery status...")
-            remind_time = 0
-            batt_percent, plugged = get_battery_status()
+            _, plugged = get_battery_status()
 
             # Battery Plugged in notifications
             if plugged != was_plugged:
@@ -51,51 +66,51 @@ class BatteryAdvisor:
                 elif not plugged and self.NOTIFY_UNPLUGGED:
                     notify("Battery Unplugged", "Battery is now discharging.")
 
-            if plugged:
-                print("Battery is charging. Skipping checks.")
-                time.sleep(self.CHECK_INTERVAL)
+            report = self.get_battery_reports()
+            print("Battery Report:", report)
+
+            if report is None:
+                time.sleep(settings.check_interval)
                 continue
 
-            # Battery Low notifications
-            if batt_percent <= self.BATTERY_ACTION_TRESHOLD:
-                print("Reporting battery action.")
+            if report == BatteryReport.ACTION:
+                battery_action = settings.battery_action
                 alert(
-                    f"Your battery is at {int(batt_percent)}%. Your system will {settings['advisor']['battery_action'].capitalize()} in a few.",
+                    message=f"Battery is critically low. Your battery will {battery_action.capitalize()} soon."
+                )
+                time.sleep(3)
+                execute_action(battery_action, settings.actions.keys)
+
+            if report == BatteryReport.CRITICAL:
+                alert_with_options(
+                    "Your battery is critically low. Please plug in your charger.",
+                    settings.critical_battery_options,
                 )
 
-                configured_action = settings["advisor"]["battery_action"]
-                action_cmd = settings["actions"][configured_action]
-                print("Executing Battery Action. Goodbye...")
-                # execute_action(action_cmd)
+            # Don't sleep for the amount of time to remind the user again.
+            # Instead, check if the time has passed using timestamps.
 
-            if batt_percent <= self.CRITICAL_BATTERY_TRESHOLD:
-                print("Reporting critical battery.")
-                remind_time = notify_with_actions(
-                    title="CRITICAL BATTERY",
-                    message=f"Your battery is at {int(batt_percent)}%. Consider plugging your device.",
-                    options=self.CRITICAL_BATTERY_OPTIONS,
-                    actions=settings["actions"],
-                    remind_time=round(
-                        settings["advisor"]["remind_time"] / 2
-                    ),  # Remind in half the remind time
+            # This is to avoid excluding critical notifications or if a long remind time is set
+            # or plugged/unplugged notifications because of sleep.
+            # More like a QoL feature. ;)
+            if (
+                report == BatteryReport.LOW
+                and remind_timestamp.timestamp() <= datetime.now().timestamp()
+            ):
+                r = alert_with_options(
+                    "Battery is low. Please plug in your charger.",
+                    settings.low_battery_options,
                 )
 
-            elif batt_percent <= self.LOW_BATTERY_TRESHOLD:
-                print("Reporting low battery.")
-                remind_time = alert_with_options(
-                    message=f"Low Battery. Consider plugging your device.",
-                    options=self.LOW_BATTERY_OPTIONS,
-                )
+                selected_action = settings.low_battery_options[r]
 
-                print(remind_time)
+                if selected_action == "remind":
+                    remind_timestamp = datetime.now() + settings.remind_time
 
-            if remind_time > 0:
-                print("A function returned a remind time!")
-                time.sleep(remind_time)
-                continue
+                else:
+                    execute_action(selected_action, settings.actions)
 
-            print("Sleeping...")
-            time.sleep(self.CHECK_INTERVAL)
+            time.sleep(settings.check_interval)
 
     def _on_enabled_click(self, icon, item):
         self.running = not self.running

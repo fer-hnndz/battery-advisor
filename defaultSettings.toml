@@ -31,6 +31,11 @@ remind_time = 180
 
 # Here you can define the available actions for the battery-advisor.
 # The commands must be separated in lists as Python's subprocess library arguments.
+
+# As you can see `remind` is not defined here as the remind me later feature
+# is done programatically and not with the terminal.
+
+# You can still use it on the low and critical options settings.
 [actions]
 hibernate = ["systemctl", "hibernate"]
 suspend = ["systemctl", "suspend"]

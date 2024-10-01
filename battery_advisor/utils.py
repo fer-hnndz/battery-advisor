@@ -24,19 +24,16 @@ def get_battery_status() -> tuple[int, bool]:
     return batt.percent, batt.power_plugged
 
 
-def execute_action(action: list[str]) -> None:
+def execute_action(action_name: str, actions: dict[str, list[str]]) -> None:
     """Executes specified action
 
     Parameters
     ----------
     action : list[str]
-        List of strings that make up the command to be executed.
+        The name of the action to execute
     """
 
     try:
-        a = subprocess.run(action)
+        subprocess.run(actions[action_name], stdout=subprocess.PIPE)
     except Exception as e:
-        notify(
-            "Error",
-            f"Failed to perform action. Perhaps the actions is not valid.\n\n{e}",
-        )
+        print("Failed to perform action: ", e)
