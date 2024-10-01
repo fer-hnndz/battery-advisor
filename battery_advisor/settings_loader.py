@@ -1,5 +1,7 @@
-import toml
 import os
+
+import toml
+
 from .types import Settings
 from .utils import _get_project_root
 

@@ -1,6 +1,7 @@
 import pystray
 from PIL import Image
 from PIL.ImageFile import ImageFile
+
 from .utils import _get_project_root
 
 

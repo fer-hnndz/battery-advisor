@@ -4,7 +4,7 @@
 # and modifying the values there.
 
 [tresholds]
-low_battery_treshold = 25
+low_battery_treshold = 15
 critical_battery_treshold = 10
 battery_action_treshold = 5
 
