@@ -2,6 +2,7 @@ import time
 from .utils import get_battery_status, notify, notify_with_actions, execute_action
 from .settings_loader import load_settings
 from .gui.alerts import MessageAlert, AlertWithButtons
+from .tray import get_icon
 
 settings = load_settings()
 
@@ -20,6 +21,9 @@ CRITICAL_BATTERY_OPTIONS = settings["advisor"]["critical_battery_options"]
 
 
 def main():
+    get_icon().run()
+    return
+
     _, was_plugged = get_battery_status()
 
     while True:
