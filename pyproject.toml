@@ -12,6 +12,9 @@ include = ["defaultSettings.toml", "icon.png", "LICENSE"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pystray = "^0.19.5"
+toml = "^0.10.2"
+psutil = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
