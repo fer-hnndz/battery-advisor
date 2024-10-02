@@ -24,8 +24,8 @@ class BatteryAdvisor:
 
         batt_percent, plugged = get_battery_status()
 
-        # if plugged:
-        #     return None
+        if plugged:
+            return None
 
         if batt_percent <= settings.battery_action_treshold:
             return BatteryReport.ACTION
