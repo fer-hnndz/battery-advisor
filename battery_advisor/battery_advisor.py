@@ -13,6 +13,7 @@ from datetime import datetime
 settings = Settings.load()
 
 
+VERSION = "1.1.0"
 class BatteryAdvisor:
     """Base Program that manages SysTray Icon and the battery checker service."""
 
@@ -127,7 +128,8 @@ class BatteryAdvisor:
                 text="Enabled",
                 checked=lambda item: self.running,
                 action=self._on_enabled_click,
-            )
+            ),
+            MenuItem(text = f"Version: {VERSION}", checked=None, action=None),
         )
         get_icon(menu).run()
         print("Exiting...")
