@@ -1,4 +1,5 @@
-from typing import TypedDict, Literal
+from typing import Literal, TypedDict
+from enum import Enum
 
 
 class Tresholds(TypedDict):
@@ -17,7 +18,13 @@ class Advisor(TypedDict):
     check_interval: int
 
 
-class Settings(TypedDict):
+class SettingsFile(TypedDict):
     tresholds: Tresholds
     advisor: Advisor
     actions: dict[str, list[str]]
+
+
+class BatteryReport(Enum):
+    LOW = 0
+    CRITICAL = 1
+    ACTION = 2
