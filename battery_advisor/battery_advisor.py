@@ -5,7 +5,7 @@ from pystray import Menu, MenuItem
 from .settings_loader import Settings
 from .tray import get_icon
 from .utils import execute_action, get_battery_status
-from .notifications import notify, notify_with_actions, alert_with_options, alert
+from .notifications import notify, alert_with_options, alert
 from .types import BatteryReport
 from typing import Optional
 from datetime import datetime
@@ -24,8 +24,8 @@ class BatteryAdvisor:
 
         batt_percent, plugged = get_battery_status()
 
-        if plugged:
-            return None
+        # if plugged:
+        #     return None
 
         if batt_percent <= settings.battery_action_treshold:
             return BatteryReport.ACTION
@@ -61,9 +61,9 @@ class BatteryAdvisor:
             # Battery Plugged in notifications
             if plugged != was_plugged:
                 was_plugged = plugged
-                if plugged and self.NOTIFY_PLUGGED:
+                if plugged and settings.notify_plugged:
                     notify("Battery Plugged In", "Battery is now charging")
-                elif not plugged and self.NOTIFY_UNPLUGGED:
+                elif not plugged and settings.notify_unplugged:
                     notify("Battery Unplugged", "Battery is now discharging.")
 
             report = self.get_battery_reports()
@@ -75,16 +75,15 @@ class BatteryAdvisor:
 
             if report == BatteryReport.ACTION:
                 battery_action = settings.battery_action
-                alert(
-                    message=f"Battery is critically low. Your battery will {battery_action.capitalize()} soon."
-                )
+                alert(message=f"Your battery will {battery_action.capitalize()} soon.")
                 time.sleep(3)
-                execute_action(battery_action, settings.actions.keys)
+                execute_action(battery_action, settings.actions)
 
             if report == BatteryReport.CRITICAL:
                 alert_with_options(
-                    "Your battery is critically low. Please plug in your charger.",
-                    settings.critical_battery_options,
+                    message="Your battery is critically low. Please plug in your charger.",
+                    options=settings.critical_battery_options,
+                    title="Battery Critically Low",
                 )
 
             # Don't sleep for the amount of time to remind the user again.
@@ -100,12 +99,15 @@ class BatteryAdvisor:
                 r = alert_with_options(
                     "Battery is low. Please plug in your charger.",
                     settings.low_battery_options,
+                    title="Battery Low",
                 )
 
                 selected_action = settings.low_battery_options[r]
 
                 if selected_action == "remind":
-                    remind_timestamp = datetime.now() + settings.remind_time
+                    remind_timestamp = datetime.fromtimestamp(
+                        remind_timestamp.timestamp() + settings.remind_time
+                    )
 
                 else:
                     execute_action(selected_action, settings.actions)

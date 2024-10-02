@@ -31,7 +31,8 @@ class Settings:
         self.remind_time: int = int(settings["advisor"]["remind_time"])
 
         # Tresholds
-        self.low_battery_treshold = settings["tresholds"]["low_battery_treshold"]
+        # self.low_battery_treshold = settings["tresholds"]["low_battery_treshold"]
+        self.low_battery_treshold = 100
         self.critical_battery_treshold = settings["tresholds"][
             "critical_battery_treshold"
         ]

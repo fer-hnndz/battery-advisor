@@ -8,15 +8,19 @@ from ..utils import execute_action
 
 
 class MessageAlert(Gtk.Dialog):
-    TITLE = "Battery Advisor"
-
-    def __init__(self, message):
-        super().__init__(self.TITLE, transient_for=None)
+    def __init__(
+        self,
+        title: str,
+        message: str,
+    ):
+        super().__init__(title, transient_for=None)
 
         content = self.get_content_area()
         _title_label = Gtk.Label(margin_bottom=13, margin_top=10)
-        _title_label.set_markup(f"<b>{self.TITLE}</b>")
-        _msg_label = Gtk.Label(message, margin_bottom=10)
+        _title_label.set_markup(f"<b>{title}</b>")
+        _msg_label = Gtk.Label(
+            message, margin_bottom=12, margin_start=10, margin_end=10
+        )
 
         # Increase text size
         _title_label.override_font(Pango.FontDescription("Ubuntu 12"))
@@ -39,8 +43,8 @@ class MessageAlert(Gtk.Dialog):
 
 
 class AlertWithButtons(MessageAlert):
-    def __init__(self, message, actions: list[str]):
-        super().__init__(message)
+    def __init__(self, title: str, message, actions: list[str]):
+        super().__init__(message=message, title=title)
 
         for i, action in enumerate(actions):
             self.add_button(action.capitalize(), i)
