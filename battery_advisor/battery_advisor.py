@@ -10,15 +10,23 @@ from .types import BatteryReport
 from typing import Optional
 from datetime import datetime
 
-settings = Settings.load()
-
-
 VERSION = "1.1.0"
+
+
 class BatteryAdvisor:
     """Base Program that manages SysTray Icon and the battery checker service."""
 
-    def __init__(self):
+    def __init__(self, clean: bool = False):
+        """
+        Initializes the Battery Advisor program.
+
+        Parameters
+        ----------
+        clean : bool, optional
+            If True, the program will use default settings.
+        """
         self.running = True
+        self.settings = Settings.load(clean)
 
     def get_battery_reports(self) -> Optional[BatteryReport]:
         """Returns thet status that needs to be reported to the user"""
@@ -28,10 +36,10 @@ class BatteryAdvisor:
         if plugged:
             return None
 
-        if batt_percent <= settings.battery_action_treshold:
+        if batt_percent <= self.settings.battery_action_treshold:
             return BatteryReport.ACTION
 
-        if batt_percent <= settings.critical_battery_treshold:
+        if batt_percent <= self.settings.critical_battery_treshold:
             return BatteryReport.CRITICAL
 
         if batt_percent <= 100:
@@ -62,28 +70,28 @@ class BatteryAdvisor:
             # Battery Plugged in notifications
             if plugged != was_plugged:
                 was_plugged = plugged
-                if plugged and settings.notify_plugged:
+                if plugged and self.settings.notify_plugged:
                     notify("Battery Plugged In", "Battery is now charging")
-                elif not plugged and settings.notify_unplugged:
+                elif not plugged and self.settings.notify_unplugged:
                     notify("Battery Unplugged", "Battery is now discharging.")
 
             report = self.get_battery_reports()
             print("Battery Report:", report)
 
             if report is None:
-                time.sleep(settings.check_interval)
+                time.sleep(self.settings.check_interval)
                 continue
 
             if report == BatteryReport.ACTION:
-                battery_action = settings.battery_action
+                battery_action = self.settings.battery_action
                 alert(message=f"Your battery will {battery_action.capitalize()} soon.")
                 time.sleep(3)
-                execute_action(battery_action, settings.actions)
+                execute_action(battery_action, self.settings.actions)
 
             if report == BatteryReport.CRITICAL:
                 alert_with_options(
                     message="Your battery is critically low. Please plug in your charger.",
-                    options=settings.critical_battery_options,
+                    options=self.settings.critical_battery_options,
                     title="Battery Critically Low",
                 )
 
@@ -99,21 +107,21 @@ class BatteryAdvisor:
             ):
                 r = alert_with_options(
                     "Battery is low. Please plug in your charger.",
-                    settings.low_battery_options,
+                    self.settings.low_battery_options,
                     title="Battery Low",
                 )
 
-                selected_action = settings.low_battery_options[r]
+                selected_action = self.settings.low_battery_options[r]
 
                 if selected_action == "remind":
                     remind_timestamp = datetime.fromtimestamp(
-                        remind_timestamp.timestamp() + settings.remind_time
+                        remind_timestamp.timestamp() + self.settings.remind_time
                     )
 
                 else:
-                    execute_action(selected_action, settings.actions)
+                    execute_action(selected_action, self.settings.actions)
 
-            time.sleep(settings.check_interval)
+            time.sleep(self.settings.check_interval)
 
     def _on_enabled_click(self, icon, item):
         self.running = not self.running
@@ -129,7 +137,7 @@ class BatteryAdvisor:
                 checked=lambda item: self.running,
                 action=self._on_enabled_click,
             ),
-            MenuItem(text = f"Version: {VERSION}", checked=None, action=None),
+            MenuItem(text=f"Version: {VERSION}", checked=None, action=None),
         )
         get_icon(menu).run()
         print("Exiting...")

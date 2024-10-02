@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "battery-advisor"
-version = "1.0.0"
+version = "1.1.0"
 description = "A simple tool to monitor and notify about battery status. Built with Python."
 authors = ["fer-hnndz <65425622+fer-hnndz@users.noreply.github.com>"]
 license = "MIT"
@@ -22,4 +22,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-battery-advisor = "battery_advisor:entry.main"
+battery-advisor = "battery_advisor:entry.cli"

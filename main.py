@@ -1,4 +1,4 @@
-from battery_advisor import main
+from battery_advisor import cli
 
 if __name__ == "__main__":
-    main()
+    cli()
