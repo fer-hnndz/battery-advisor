@@ -18,6 +18,8 @@ notify_unplugged = true
 
 # This is the action that will be executed when the battery reaches the battery_action_treshold.
 battery_action = "hibernate"
+
+# How many seconds to check between battery status.
 check_interval = 15
 
 # Note, if you close the notification, the first action will be executed.

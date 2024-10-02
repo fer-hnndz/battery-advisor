@@ -1,7 +1,8 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+gi.require_version("Pango", "1.0")
+from gi.repository import Gtk, Pango
 
 from ..utils import execute_action
 
@@ -13,12 +14,16 @@ class MessageAlert(Gtk.Dialog):
         super().__init__(self.TITLE, transient_for=None)
 
         content = self.get_content_area()
-        _title_label = Gtk.Label()
+        _title_label = Gtk.Label(margin_bottom=13, margin_top=10)
         _title_label.set_markup(f"<b>{self.TITLE}</b>")
-        msg_label = Gtk.Label(message)
+        _msg_label = Gtk.Label(message, margin_bottom=10)
+
+        # Increase text size
+        _title_label.override_font(Pango.FontDescription("Ubuntu 12"))
+        _msg_label.override_font(Pango.FontDescription("Ubuntu 10"))
 
         content.add(_title_label)
-        content.add(msg_label)
+        content.add(_msg_label)
 
         if self.__class__ == MessageAlert:
             self.add_button("Close", Gtk.ResponseType.CLOSE)
