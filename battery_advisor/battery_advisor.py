@@ -9,8 +9,12 @@ from .notifications import notify, alert_with_options, alert
 from .types import BatteryReport
 from typing import Optional
 from datetime import datetime
+import logging
+from systemd.journal import JournalHandler
 
 VERSION = "1.1.0"
+logger = logging.getLogger(__name__)
+logger.addHandler(JournalHandler())
 
 
 class BatteryAdvisor:
@@ -25,6 +29,8 @@ class BatteryAdvisor:
         clean : bool, optional
             If True, the program will use default settings.
         """
+
+        logging.debug("==== Initializing Battery Advisor... ====")
         self.running = True
         self.settings = Settings.load(clean)
 
@@ -32,6 +38,7 @@ class BatteryAdvisor:
         """Returns thet status that needs to be reported to the user"""
 
         batt_percent, plugged = get_battery_status()
+        logger.info(f"Battery Status: {batt_percent}% | Plugged: {plugged}")
 
         if plugged:
             return None
@@ -42,7 +49,7 @@ class BatteryAdvisor:
         if batt_percent <= self.settings.critical_battery_treshold:
             return BatteryReport.CRITICAL
 
-        if batt_percent <= 100:
+        if batt_percent <= self.settings.low_battery_treshold:
             return BatteryReport.LOW
 
         return None
@@ -53,7 +60,7 @@ class BatteryAdvisor:
         This one runs in a separate thread because the SysTray icon must run on the main thread.
         """
 
-        print("Starting battery checker...")
+        logging.info("Starting battery checker...")
 
         # Always get initial status to avoid false notifications
         _, was_plugged = get_battery_status()
@@ -64,7 +71,6 @@ class BatteryAdvisor:
                 time.sleep(3)
                 continue
 
-            print("Checking battery status...")
             _, plugged = get_battery_status()
 
             # Battery Plugged in notifications
@@ -76,7 +82,7 @@ class BatteryAdvisor:
                     notify("Battery Unplugged", "Battery is now discharging.")
 
             report = self.get_battery_reports()
-            print("Battery Report:", report)
+            logging.info("Battery Report:", report)
 
             if report is None:
                 time.sleep(self.settings.check_interval)
@@ -125,7 +131,9 @@ class BatteryAdvisor:
 
     def _on_enabled_click(self, icon, item):
         self.running = not self.running
-        print("Battery Advisor is now", "enabled" if self.running else "disabled")
+        logging.warning(
+            "Battery Advisor is now", "enabled" if self.running else "disabled"
+        )
 
     def start(self):
         batt_thread = threading.Thread(target=self._battery_checker, daemon=True)
@@ -140,5 +148,5 @@ class BatteryAdvisor:
             MenuItem(text=f"Version: {VERSION}", checked=None, action=None),
         )
         get_icon(menu).run()
-        print("Exiting...")
+        logging.info("Exiting...")
         return 0
