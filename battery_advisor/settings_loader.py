@@ -3,7 +3,10 @@ import toml
 from typing import Type
 from .types import SettingsFile
 from .utils import _get_project_root
+import logging
 
+
+logger = logging.getLogger(__name__)
 user_settings_path = os.path.expanduser("~/.config/battery-advisor/settings.toml")
 default_settings_path = _get_project_root() + "/defaultSettings.toml"
 
@@ -18,7 +21,7 @@ def load_settings(load_default: bool = False) -> SettingsFile:
     """
 
     if load_default:
-        print("Loading default settings...")
+        logging.info("(--clean) Loading default settings...")
         with open(default_settings_path) as f:
             return toml.load(f)
 
@@ -29,7 +32,7 @@ def load_settings(load_default: bool = False) -> SettingsFile:
     )
 
     if not os.path.exists(user_settings_path):
-        print("User settings not found. Using default settings.")
+        logging.warning("User settings not found. Using default settings.")
 
     with open(path) as f:
         return toml.load(f)

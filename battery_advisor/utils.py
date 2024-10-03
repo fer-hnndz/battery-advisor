@@ -13,6 +13,10 @@ def _get_project_root() -> str:
     return os.path.expandvars(absolute_root)
 
 
+def get_log_path() -> str:
+    return os.path.expanduser("~/.battery-advisor.log")
+
+
 def _get_path_icon():
     icon_path = _get_project_root() + "/icon.png"
     return os.path.expandvars(icon_path)
