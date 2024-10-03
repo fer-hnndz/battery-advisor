@@ -4,3 +4,4 @@ dist
 src/
 *.gz
 pkg
+*.log

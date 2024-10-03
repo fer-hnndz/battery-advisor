@@ -9,31 +9,47 @@ from .notifications import notify, alert_with_options, alert
 from .types import BatteryReport
 from typing import Optional
 from datetime import datetime
+import logging
+from systemd.journal import JournalHandler
 
-settings = Settings.load()
+VERSION = "1.1.0"
+logger = logging.getLogger(__name__)
+logger.addHandler(JournalHandler())
 
 
 class BatteryAdvisor:
     """Base Program that manages SysTray Icon and the battery checker service."""
 
-    def __init__(self):
+    def __init__(self, clean: bool = False):
+        """
+        Initializes the Battery Advisor program.
+
+        Parameters
+        ----------
+        clean : bool, optional
+            If True, the program will use default settings.
+        """
+
+        logging.debug("==== Initializing Battery Advisor... ====")
         self.running = True
+        self.settings = Settings.load(clean)
 
     def get_battery_reports(self) -> Optional[BatteryReport]:
         """Returns thet status that needs to be reported to the user"""
 
         batt_percent, plugged = get_battery_status()
+        logger.info(f"Battery Status: {batt_percent}% | Plugged: {plugged}")
 
         if plugged:
             return None
 
-        if batt_percent <= settings.battery_action_treshold:
+        if batt_percent <= self.settings.battery_action_treshold:
             return BatteryReport.ACTION
 
-        if batt_percent <= settings.critical_battery_treshold:
+        if batt_percent <= self.settings.critical_battery_treshold:
             return BatteryReport.CRITICAL
 
-        if batt_percent <= 100:
+        if batt_percent <= self.settings.low_battery_treshold:
             return BatteryReport.LOW
 
         return None
@@ -44,7 +60,7 @@ class BatteryAdvisor:
         This one runs in a separate thread because the SysTray icon must run on the main thread.
         """
 
-        print("Starting battery checker...")
+        logging.info("Starting battery checker...")
 
         # Always get initial status to avoid false notifications
         _, was_plugged = get_battery_status()
@@ -55,34 +71,33 @@ class BatteryAdvisor:
                 time.sleep(3)
                 continue
 
-            print("Checking battery status...")
             _, plugged = get_battery_status()
 
             # Battery Plugged in notifications
             if plugged != was_plugged:
                 was_plugged = plugged
-                if plugged and settings.notify_plugged:
+                if plugged and self.settings.notify_plugged:
                     notify("Battery Plugged In", "Battery is now charging")
-                elif not plugged and settings.notify_unplugged:
+                elif not plugged and self.settings.notify_unplugged:
                     notify("Battery Unplugged", "Battery is now discharging.")
 
             report = self.get_battery_reports()
-            print("Battery Report:", report)
+            logging.info("Battery Report:", report)
 
             if report is None:
-                time.sleep(settings.check_interval)
+                time.sleep(self.settings.check_interval)
                 continue
 
             if report == BatteryReport.ACTION:
-                battery_action = settings.battery_action
+                battery_action = self.settings.battery_action
                 alert(message=f"Your battery will {battery_action.capitalize()} soon.")
                 time.sleep(3)
-                execute_action(battery_action, settings.actions)
+                execute_action(battery_action, self.settings.actions)
 
             if report == BatteryReport.CRITICAL:
                 alert_with_options(
                     message="Your battery is critically low. Please plug in your charger.",
-                    options=settings.critical_battery_options,
+                    options=self.settings.critical_battery_options,
                     title="Battery Critically Low",
                 )
 
@@ -98,25 +113,27 @@ class BatteryAdvisor:
             ):
                 r = alert_with_options(
                     "Battery is low. Please plug in your charger.",
-                    settings.low_battery_options,
+                    self.settings.low_battery_options,
                     title="Battery Low",
                 )
 
-                selected_action = settings.low_battery_options[r]
+                selected_action = self.settings.low_battery_options[r]
 
                 if selected_action == "remind":
                     remind_timestamp = datetime.fromtimestamp(
-                        remind_timestamp.timestamp() + settings.remind_time
+                        remind_timestamp.timestamp() + self.settings.remind_time
                     )
 
                 else:
-                    execute_action(selected_action, settings.actions)
+                    execute_action(selected_action, self.settings.actions)
 
-            time.sleep(settings.check_interval)
+            time.sleep(self.settings.check_interval)
 
     def _on_enabled_click(self, icon, item):
         self.running = not self.running
-        print("Battery Advisor is now", "enabled" if self.running else "disabled")
+        logging.warning(
+            "Battery Advisor is now", "enabled" if self.running else "disabled"
+        )
 
     def start(self):
         batt_thread = threading.Thread(target=self._battery_checker, daemon=True)
@@ -127,8 +144,9 @@ class BatteryAdvisor:
                 text="Enabled",
                 checked=lambda item: self.running,
                 action=self._on_enabled_click,
-            )
+            ),
+            MenuItem(text=f"Version: {VERSION}", checked=None, action=None),
         )
         get_icon(menu).run()
-        print("Exiting...")
+        logging.info("Exiting...")
         return 0

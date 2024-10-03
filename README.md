@@ -22,3 +22,4 @@ $ yay -S battery-advisor
 - python-pystray
 - python-toml
 - python-psutil
+- python-systemd
