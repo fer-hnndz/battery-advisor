@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "battery-advisor"
-version = "1.1.0"
+version = "1.2.0"
 description = "A simple tool to monitor and notify about battery status. Built with Python."
 authors = ["fer-hnndz <65425622+fer-hnndz@users.noreply.github.com>"]
 license = "MIT"
@@ -8,7 +8,11 @@ readme = "README.md"
 homepage = "https://github.com/fer-hnndz/battery-advisor"
 keywords = ["battery", "monitor", "notify"]
 include = ["defaultSettings.toml", "icon.png", "LICENSE"]
-
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Desktop Environment",
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
