@@ -82,7 +82,7 @@ class BatteryAdvisor:
                     notify("Battery Unplugged", "Battery is now discharging.")
 
             report = self.get_battery_reports()
-            logging.info("Battery Report:", report)
+            logging.info(f"Battery Report: {str(report)}")
 
             if report is None:
                 time.sleep(self.settings.check_interval)
